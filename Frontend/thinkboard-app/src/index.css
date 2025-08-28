@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+@plugin "daisyui" {
+  /* themes: light --default, dark --prefersdark, forest, retro; */
+  themes: all;
+}
+
+.container {
+  @apply px-4 md:px-8 min-w-full;
+}
+
+.main-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
