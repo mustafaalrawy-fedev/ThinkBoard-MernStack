@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import notesRoutes from './routes/notesRoutes.js';
 import { connectDb } from './config/db.js';
 import rateLimiter from './middleware/rateLimiter.js';
+import path from 'path';
 
 // load environment variables from .env file
 dotenv.config();
@@ -18,9 +19,13 @@ const app = express();
 // connectDb();
 
 // middlewares
-app.use(cors({ origin: 'http://localhost:5173' })); // this will allow the frontend to access the backend api
+if (process.env.NODE_ENV !== 'production') {
+  // this will allow the frontend to access the backend api in development mode
+  app.use(cors({ origin: 'http://localhost:5173' })); // this will allow the frontend to access the backend api
+}
+
 app.use(express.json()); //  this to parse the body of the request
-app.use(rateLimiter); // this will check the rate limit for each request, like if user cannot sent request more than 10 times in 20 seconds then it will send a response that you have reached the rate limit.
+app.use(rateLimiter); // Temporarily disabled - uncomment when Upstash is configured
 
 // custom middleware to log the request before sent the response
 // app.use((req, res, next) => {
@@ -28,14 +33,32 @@ app.use(rateLimiter); // this will check the rate limit for each request, like i
 //   next();
 // });
 
-// to make the routes more manageable we will use the router in routes folder and use it here with a prefix /api/notes which is the base url for all the notes routes
-app.use('/api/notes', notesRoutes);
-
 const PORT = process.env.PORT || 5001;
 // This will make database connect before the app run
 // in the terminal will be like this
 // Connected to MongoDB Successfully!
 // Server is running on port 5001
+const __dirname = path.resolve();
+
+// serve the frontend files as static files or static assets
+app.use(
+  express.static(path.join(__dirname, '../Frontend/thinkboard-app/dist'))
+);
+
+// API routes - MUST come after static files but BEFORE catch-all route
+app.use('/api/notes', notesRoutes);
+
+// We only want to serve the index.html when we use render.com for deployment
+// This will run in the production mode only
+// IMPORTANT: This catch-all route MUST be last
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(
+      path.join(__dirname, '../Frontend/thinkboard-app/dist', 'index.html')
+    );
+  });
+}
+
 connectDb().then(() => {
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

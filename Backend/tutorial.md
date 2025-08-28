@@ -399,3 +399,13 @@ app.use(rateLimit.middleware());
 ```
 
 - i install this package `npm i @upstash/ratelimit @upstash/redis` used for rate limiting and caching.
+
+# To use Middleware where the frontend Localhost be in The domain with backend we need to use `path` package to get the path of the file of the frontend and use it in the middleware with base url of the backend.
+
+• we can deploy the frontend and the backend separately if we want or use `path` package to get the path of the file of the frontend and use it in the middleware with base url of the backend.
+
+• `server.js`
+
+```
+
+```
